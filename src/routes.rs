@@ -1560,7 +1560,7 @@ fn render_about_page(config: &Config) -> String {
   <tbody>
     <tr><td style="color:var(--muted)">Version</td><td><strong>{version}</strong></td></tr>
     <tr><td style="color:var(--muted)">Language</td><td>Rust + Axum</td></tr>
-    <tr><td style="color:var(--muted)">Storage</td><td>YAML (board.yaml, config.yaml) + SQLite (uptime)</td></tr>
+    <tr><td style="color:var(--muted)">Storage</td><td>YAML (board.yaml, config.yaml) + redb (uptime)</td></tr>
     <tr><td style="color:var(--muted)">Uptime checks</td><td>HTTP GET or TCP connect (no root required)</td></tr>
     <tr><td style="color:var(--muted)">Authentication</td><td>None built-in — use a reverse proxy (Authelia, tinyauth, etc.)</td></tr>
     <tr><td style="color:var(--muted)">API</td><td><a href="/api/links">/api/links</a> — board data as JSON</td></tr>

@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - develop        # dev build on every push to develop
-    tags:
-      - 'v*'           # release build on version tag
+  release:
+    types: [published] # release build when a GitHub Release is published
   workflow_dispatch:   # manual trigger from GitHub UI
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
   # amd64 and arm64 build in parallel, then merged into one manifest
   build-release:
     needs: prepare
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
@@ -93,7 +93,6 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: true
-          # push as a platform-specific digest, not a tag yet
           tags: ${{ needs.prepare.outputs.image }}:${{ github.ref_name }}-${{ matrix.runner }}
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ matrix.platform }}
@@ -116,7 +115,7 @@ jobs:
   # ── Merge platform digests into a single multi-arch manifest ────────
   merge-release:
     needs: [prepare, build-release]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read

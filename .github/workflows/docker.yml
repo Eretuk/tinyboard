@@ -92,9 +92,7 @@ jobs:
         with:
           context: .
           platforms: ${{ matrix.platform }}
-          push: true
-          tags: ${{ needs.prepare.outputs.image }}:${{ github.ref_name }}-${{ matrix.runner }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ needs.prepare.outputs.image }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
 

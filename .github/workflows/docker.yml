@@ -20,7 +20,7 @@ jobs:
           REPO_OWNER: ${{ github.repository_owner }}
         run: echo "image=ghcr.io/$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')/tinyboard" >> $GITHUB_OUTPUT
 
-  # ── Dev build (develop branch) ──────────────────────────────────────
+  # ── Dev build (develop branch, amd64 only, fast) ────────────────────
   build-dev:
     needs: prepare
     if: github.ref == 'refs/heads/develop'
@@ -55,14 +55,22 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ── Release build (version tag) ─────────────────────────────────────
+  # ── Release build: each platform on its native runner ───────────────
+  # amd64 and arm64 build in parallel, then merged into one manifest
   build-release:
     needs: prepare
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm  # native ARM runner (GitHub-hosted)
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - name: Checkout
@@ -78,14 +86,70 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push release image
+      - name: Build and push platform image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           push: true
-          tags: |
-            ${{ needs.prepare.outputs.image }}:latest
-            ${{ needs.prepare.outputs.image }}:${{ github.ref_name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # push as a platform-specific digest, not a tag yet
+          tags: ${{ needs.prepare.outputs.image }}:${{ github.ref_name }}-${{ matrix.runner }}
+          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.runner }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # ── Merge platform digests into a single multi-arch manifest ────────
+  merge-release:
+    needs: [prepare, build-release]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create and push multi-arch manifest
+        run: |
+          IMAGE="${{ needs.prepare.outputs.image }}"
+          TAG="${{ github.ref_name }}"
+          DIGESTS=$(ls /tmp/digests | awk '{print "'"${IMAGE}"'@sha256:" $0}' | tr '\n' ' ')
+          docker buildx imagetools create \
+            --tag "${IMAGE}:${TAG}" \
+            --tag "${IMAGE}:latest" \
+            ${DIGESTS}
+
+      - name: Inspect manifest
+        run: |
+          docker buildx imagetools inspect ${{ needs.prepare.outputs.image }}:${{ github.ref_name }}

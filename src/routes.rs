@@ -486,7 +486,7 @@ pub async fn uptime_handler(
                 if panel_name != fp { continue; }
             }
             // Host detail view: load full history for the period
-            if let (Some(ref fh), Some(ref fp)) = (&filter_host, &filter_panel) {
+            if let (Some(fh), Some(fp)) = (&filter_host, &filter_panel) {
                 if panel_name == fp.as_str() {
                     if let Ok(records) = db.get_host_history_days(panel_name, fh, trim_days) {
                         history.push((panel_name.clone(), records));

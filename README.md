@@ -79,6 +79,7 @@ webrefresh: '60'       # Browser page auto-refresh interval (seconds)
 scan_interval: '60'    # Uptime scan interval (seconds, server-side default)
 dbtrimdays: '30'       # Delete uptime records older than N days
 panel_gap: 12px        # Gap between panels (CSS value)
+btn_gap: 8px          # Gap between buttons inside a panel
 center_columns: true   # Center panel grid
 panel_border: true     # Show panel card borders
 nav_font_size: 0.85rem
@@ -98,6 +99,7 @@ btn_font_size: 0.8rem
 | `SCAN_INTERVAL` | Uptime scan interval (seconds) | `60` |
 | `DBTRIMDAYS` | Uptime record retention (days) | `30` |
 | `PANEL_GAP` | Gap between panels | `12px` |
+| `BTN_GAP` | Gap between buttons inside a panel | `8px` |
 | `CENTER_COLUMNS` | Center panel grid | `true` |
 | `PANEL_BORDER` | Show panel borders | `true` |
 | `TZ` | Timezone for uptime timestamps | system |

@@ -590,6 +590,7 @@ pub async fn config_save_handler(
     state.config.panel_border = form.panel_border.is_some();
     state.config.nav_font_size = normalize_css_size(&form.nav_font_size, "0.85rem");
     state.config.btn_font_size = normalize_css_size(&form.btn_font_size, "0.8rem");
+    state.config.btn_gap = normalize_css_size(&form.btn_gap, "8px");
     state
         .config
         .save(&state.config_path)
@@ -649,6 +650,8 @@ pub struct ConfigForm {
     nav_font_size: String,
     #[serde(default)]
     btn_font_size: String,
+    #[serde(default)]
+    btn_gap: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -715,7 +718,7 @@ fn render_dashboard(config: &Config, links: &Links, selected_tab: Option<i32>, u
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>tinyboard</title>
 <style>
-:root {{ --accent: {accent}; --accent-dark: {accent_dark}; --on: #4ade80; --off: #f87171; --btn-width: {btn_width}; --panel-gap: {panel_gap}; --nav-font-size: {nav_font_size}; --btn-font-size: {btn_font_size}; }}
+:root {{ --accent: {accent}; --accent-dark: {accent_dark}; --on: #4ade80; --off: #f87171; --btn-width: {btn_width}; --panel-gap: {panel_gap}; --btn-gap: {btn_gap}; --nav-font-size: {nav_font_size}; --btn-font-size: {btn_font_size}; }}
 [data-theme="dark"] {{ --bg: #1a1d23; --panel: #22262d; --panel-border: #2d333b; --text: #c9d1d9; --muted: #8b949e; --button-bg: #2d333b; --button-border: #444c56; --topbar-bg: var(--accent); --topbar-text: #ffffff; }}
 [data-theme="light"] {{ --bg: #f6f8fa; --panel: #ffffff; --panel-border: #d0d7de; --text: #24292f; --muted: #57606a; --button-bg: #f3f4f6; --button-border: #d0d7de; --topbar-bg: var(--accent); --topbar-text: #1a1d23; }}
 @media (prefers-color-scheme: dark) {{ [data-theme="auto"] {{ --bg: #1a1d23; --panel: #22262d; --panel-border: #2d333b; --text: #c9d1d9; --muted: #8b949e; --button-bg: #2d333b; --button-border: #444c56; --topbar-bg: var(--accent); --topbar-text: #ffffff; }} }}
@@ -750,7 +753,7 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
 .panel-card h3 a {{ color: inherit; text-decoration: underline; text-underline-offset: 2px; }}
 .panel-card.no-border {{ border-color: transparent; background: transparent; box-shadow: none; }}
 .panel-card h3 {{ text-align: center; }}
-.host-grid {{ display: grid; gap: 0.55rem; grid-template-columns: minmax(var(--btn-width, 180px), var(--btn-width, 180px)); justify-content: center; }}
+.host-grid {{ display: grid; gap: var(--btn-gap, 8px); grid-template-columns: minmax(var(--btn-width, 180px), var(--btn-width, 180px)); justify-content: center; }}
 .host-button {{ display: flex; gap: 0.45rem; align-items: center; justify-content: center; text-align: center; width: var(--btn-width, 180px); min-height: 30px; padding: 0.32rem 0.6rem; border-radius: 6px; background: var(--accent); border: none; color: var(--topbar-text); text-decoration: none; transition: transform 0.1s, filter 0.2s; }}
 .host-button:hover {{ transform: translateY(-1px); filter: brightness(1.05); }}
 .host-icon {{ width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,0.25); display: inline-flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }}
@@ -781,6 +784,7 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
         color = safe_css_color(&config.color),
         btn_width = safe_css_size(&config.btn_width, "180px"),
         panel_gap = safe_css_size(&config.panel_gap, "12px"),
+        btn_gap = safe_css_size(if config.btn_gap.is_empty() { "8px" } else { &config.btn_gap }, "8px"),
         nav_font_size = safe_css_size(if config.nav_font_size.is_empty() { "0.85rem" } else { &config.nav_font_size }, "0.85rem"),
         btn_font_size = safe_css_size(if config.btn_font_size.is_empty() { "0.8rem" } else { &config.btn_font_size }, "0.8rem"),
         accent = accent,
@@ -1577,8 +1581,8 @@ fn render_config_page(config: &Config) -> String {
         config.db_trim_days, config.panel_gap
     ));
     content.push_str(&format!(
-        r#"<div class="form-row"><span><label>Nav font size</label><input type="text" name="nav_font_size" value="{}" placeholder="0.85rem"></span><span><label>Button font size</label><input type="text" name="btn_font_size" value="{}" placeholder="0.8rem"></span></div>"#,
-        config.nav_font_size, config.btn_font_size
+        r#"<div class="form-row"><span><label>Nav font size</label><input type="text" name="nav_font_size" value="{}" placeholder="0.85rem"></span><span><label>Button font size</label><input type="text" name="btn_font_size" value="{}" placeholder="0.8rem"></span><span><label>Button gap</label><input type="text" name="btn_gap" value="{}" placeholder="8px"></span></div>"#,
+        config.nav_font_size, config.btn_font_size, config.btn_gap
     ));
     content.push_str(&format!(
         r#"<div class="form-row"><span class="checkbox-row"><input type="checkbox" name="center_columns" id="center_columns" {}><label for="center_columns">Center panel columns layout</label></span></div>"#,

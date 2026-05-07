@@ -42,6 +42,9 @@ pub struct Config {
     pub nav_font_size: String,
     #[serde(rename = "btn_font_size", default)]
     pub btn_font_size: String,
+    /// Gap between buttons inside a panel
+    #[serde(rename = "btn_gap", default)]
+    pub btn_gap: String,
 }
 
 impl Default for Config {
@@ -60,6 +63,7 @@ impl Default for Config {
             panel_border: true,
             nav_font_size: "0.85rem".to_string(),
             btn_font_size: "0.8rem".to_string(),
+            btn_gap: "8px".to_string(),
         }
     }
 }
@@ -118,6 +122,9 @@ impl Config {
         }
         if let Ok(value) = env::var("BTN_FONT_SIZE") {
             self.btn_font_size = value;
+        }
+        if let Ok(value) = env::var("BTN_GAP") {
+            self.btn_gap = value;
         }
     }
 

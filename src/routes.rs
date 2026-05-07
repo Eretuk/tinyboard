@@ -86,14 +86,19 @@ pub async fn tabs_handler(
     // Handle reordering
     if let Some(up_str) = params.get("up").and_then(|v| v.first()) {
         if let Ok(up) = up_str.parse::<i32>() {
-            if up > 0 {
-                let prev = up - 1;
-                if let (Some(current), Some(previous)) = (
-                    state.links.tabs.get(&up).cloned(),
-                    state.links.tabs.get(&prev).cloned(),
-                ) {
-                    state.links.tabs.insert(prev, current);
-                    state.links.tabs.insert(up, previous);
+            // Find the previous key in sorted order (not necessarily up-1)
+            let mut sorted_keys: Vec<i32> = state.links.tabs.keys().copied().collect();
+            sorted_keys.sort_unstable();
+            if let Some(pos) = sorted_keys.iter().position(|&k| k == up) {
+                if pos > 0 {
+                    let prev = sorted_keys[pos - 1];
+                    if let (Some(current), Some(previous)) = (
+                        state.links.tabs.get(&up).cloned(),
+                        state.links.tabs.get(&prev).cloned(),
+                    ) {
+                        state.links.tabs.insert(prev, current);
+                        state.links.tabs.insert(up, previous);
+                    }
                 }
             }
         }
@@ -222,11 +227,14 @@ pub async fn panels_handler(
         };
 
         if let Some(oldkey) = form.oldkey.filter(|k| !k.is_empty()) {
-            if let Some(existing) = state.links.panels.remove(&oldkey) {
+            if oldkey != key {
+                if let Some(existing) = state.links.panels.remove(&oldkey) {
+                    panel.hosts = existing.hosts;
+                }
+            } else if let Some(existing) = state.links.panels.get(&key).cloned() {
                 panel.hosts = existing.hosts;
             }
-        }
-        if let Some(existing) = state.links.panels.get(&key).cloned() {
+        } else if let Some(existing) = state.links.panels.get(&key).cloned() {
             panel.hosts = existing.hosts;
         }
 
@@ -345,11 +353,18 @@ pub async fn panel_edit_handler(
         };
 
         if let Some(oldkey) = form.oldkey.filter(|k| !k.is_empty()) {
-            if let Some(existing) = state.links.panels.remove(&oldkey) {
-                panel.hosts = existing.hosts;
+            if oldkey != key {
+                // Rename: move hosts from old key, don't overwrite with target's hosts
+                if let Some(existing) = state.links.panels.remove(&oldkey) {
+                    panel.hosts = existing.hosts;
+                }
+            } else {
+                // Same key: preserve existing hosts
+                if let Some(existing) = state.links.panels.get(&key).cloned() {
+                    panel.hosts = existing.hosts;
+                }
             }
-        }
-        if let Some(existing) = state.links.panels.get(&key).cloned() {
+        } else if let Some(existing) = state.links.panels.get(&key).cloned() {
             panel.hosts = existing.hosts;
         }
 
@@ -733,9 +748,9 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
 .host-subtitle {{ margin: 0.1rem 0 0; color: var(--topbar-text); opacity: 0.72; font-size: calc(var(--btn-font-size) * 0.85); word-break: break-all; line-height: 1.05; }}
 .host-button > div {{ display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; }}
 .host-wrap {{ position: relative; display: inline-block; width: var(--btn-width, 180px); }}
-.status-dot {{ position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--off); border: 2px solid var(--bg, #1a1d23); z-index: 2; text-decoration: none; display: block; }}
+.status-dot {{ position: absolute; bottom: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--off); border: 2px solid var(--bg, #1a1d23); z-index: 2; text-decoration: none; display: block; transition: transform 0.15s; }}
 .status-dot.online {{ background: var(--on); }}
-.status-dot:hover {{ transform: scale(1.4); transition: transform 0.15s; }}
+.status-dot:hover {{ transform: scale(1.4); }}
 .tooltip-dot.on {{ background: var(--on); }}
 .tooltip-dot.off {{ background: var(--off); }}
 @media (max-width: 920px) {{ .topbar {{ grid-template-columns: 1fr; }} .nav-side.right {{ display: none; }} .tab-strip {{ margin-top: 0.35rem; }} }}
@@ -1068,30 +1083,58 @@ function movePanelDown(btn) {
 }
 
 function removePanel(btn) {
-  btn.closest('.panel-order-item').remove();
+  var item = btn.closest('.panel-order-item');
+  var key = item.querySelector('input[name="panels"]').value;
+  item.remove();
   refreshButtons();
-  // Re-enable the option in the add-select if it exists
-  var key = btn.closest('.panel-order-item') ? btn.closest('.panel-order-item').querySelector('input[name="panels"]').value : null;
-  refreshButtons();
+  // Re-add the key to the dropdown if it exists
+  var sel = document.getElementById('panel-add-select');
+  if (sel) {
+    var opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = key;
+    sel.appendChild(opt);
+  }
 }
 
 function addPanel() {
   var sel = document.getElementById('panel-add-select');
   var key = sel.value;
   if (!key) return;
+  var displayText = sel.options[sel.selectedIndex].textContent;
 
   var list = getList();
   var div = document.createElement('div');
   div.className = 'panel-order-item';
-  div.innerHTML =
-    '<input type="hidden" name="panels" value="' + key + '">' +
-    '<span class="panel-order-name">' + key + '</span>' +
-    '<span class="panel-key">(' + key + ')</span>' +
-    '<span class="panel-order-btns">' +
-      '<button type="button" class="button small" onclick="movePanelUp(this)">↑</button>' +
-      '<button type="button" class="button small" onclick="movePanelDown(this)">↓</button>' +
-      '<button type="button" class="button small danger" onclick="removePanel(this)">✕</button>' +
-    '</span>';
+  // Use textContent assignment to avoid XSS — never use innerHTML with user data
+  var hiddenInput = document.createElement('input');
+  hiddenInput.type = 'hidden';
+  hiddenInput.name = 'panels';
+  hiddenInput.value = key;
+  var nameSpan = document.createElement('span');
+  nameSpan.className = 'panel-order-name';
+  nameSpan.textContent = displayText;
+  var keySpan = document.createElement('span');
+  keySpan.className = 'panel-key';
+  keySpan.textContent = '(' + key + ')';
+  var btnsSpan = document.createElement('span');
+  btnsSpan.className = 'panel-order-btns';
+  var upBtn = document.createElement('button');
+  upBtn.type = 'button'; upBtn.className = 'button small';
+  upBtn.textContent = '↑'; upBtn.onclick = function() { movePanelUp(upBtn); };
+  var downBtn = document.createElement('button');
+  downBtn.type = 'button'; downBtn.className = 'button small';
+  downBtn.textContent = '↓'; downBtn.onclick = function() { movePanelDown(downBtn); };
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button'; removeBtn.className = 'button small danger';
+  removeBtn.textContent = '✕'; removeBtn.onclick = function() { removePanel(removeBtn); };
+  btnsSpan.appendChild(upBtn);
+  btnsSpan.appendChild(downBtn);
+  btnsSpan.appendChild(removeBtn);
+  div.appendChild(hiddenInput);
+  div.appendChild(nameSpan);
+  div.appendChild(keySpan);
+  div.appendChild(btnsSpan);
   list.appendChild(div);
 
   // Remove from dropdown

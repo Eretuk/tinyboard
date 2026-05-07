@@ -1262,7 +1262,7 @@ dependencies = [
 
 [[package]]
 name = "tinyboard"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "anyhow",
  "axum",

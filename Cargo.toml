@@ -1,0 +1,25 @@
+[package]
+name = "tinyboard"
+version = "0.2.0"
+edition = "2021"
+authors = ["Victor Kolomin"]
+description = "Lightweight self-hosted homelab dashboard with uptime monitoring"
+license = "MIT"
+
+[dependencies]
+axum = "0.7"
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+tokio = { version = "1.41", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+anyhow = "1.0"
+hyper = { version = "1.0", features = ["server", "http1"] }
+time = { version = "0.3", features = ["formatting"] }
+# Pure-Rust embedded database — no C, no perl, fast compile times
+redb = "2.1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio-util = { version = "0.7", features = ["io"] }
+tower-http = { version = "0.6", features = ["trace"] }
+urlencoding = "2.1"

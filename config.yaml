@@ -1,0 +1,12 @@
+host: 0.0.0.0
+port: '8849'
+theme: flatly
+color: dark
+btnwidth: 15em
+webrefresh: '60'
+dbtrimdays: '30'
+panel_gap: 0px
+center_columns: true
+panel_border: false
+nav_font_size: 0.85rem
+btn_font_size: 0.8rem

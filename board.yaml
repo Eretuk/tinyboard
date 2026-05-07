@@ -1,0 +1,8 @@
+tabs: {}
+panels: {}
+uptime:
+  enabled: false
+  needs_auth: false
+  show: 20
+  notify: {}
+  panels: {}

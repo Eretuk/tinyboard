@@ -1,0 +1,28 @@
+services:
+  tinyboard:
+    image: git.kolspace.cc/victor.kolomin/tinyboard:latest
+    # To build locally instead:
+    # build: .
+    container_name: tinyboard
+    restart: unless-stopped
+    ports:
+      - "8849:8849"
+    volumes:
+      # Persistent storage for config.yaml, board.yaml and the redb uptime database
+      - ./data:/data/tinyboard
+    environment:
+      - TZ=Europe/Warsaw
+      # Log level — uses standard RUST_LOG syntax:
+      #   info     — normal operation (default)
+      #   debug    — verbose, includes per-request traces
+      #   warn     — warnings and errors only
+      - RUST_LOG=info
+      # Optional: override any config.yaml value via environment variables
+      # - HOST=0.0.0.0
+      # - PORT=8849
+      # - THEME=minty
+      # - COLOR=auto
+      # - BTNWIDTH=180px
+      # - WEBREFRESH=60
+      # - SCAN_INTERVAL=60
+      # - DBTRIMDAYS=30

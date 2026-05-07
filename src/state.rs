@@ -1,4 +1,6 @@
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use crate::{config::Config, models::Links};
@@ -11,6 +13,8 @@ pub struct AppState {
     pub config_path: PathBuf,
     pub board_path: PathBuf,
     pub db_path: PathBuf,
+    /// Prevents concurrent /scan requests from stacking up
+    pub scan_running: Arc<AtomicBool>,
 }
 
 impl AppState {
@@ -26,6 +30,7 @@ impl AppState {
             config_path,
             board_path,
             db_path,
+            scan_running: Arc::new(AtomicBool::new(false)),
         })
     }
 }

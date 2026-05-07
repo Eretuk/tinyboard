@@ -142,6 +142,14 @@ pub async fn start_uptime_monitoring(state: Arc<RwLock<AppState>>) {
 
         // ── 2. Determine which hosts are due for a scan ───────────────────────
         let now = Instant::now();
+
+        // Evict stale last_scan entries for hosts that no longer exist (e.g. after /reload)
+        let active_keys: std::collections::HashSet<(String, String)> = tracked
+            .iter()
+            .map(|t| (t.panel.clone(), t.host.name.clone()))
+            .collect();
+        last_scan.retain(|k, _| active_keys.contains(k));
+
         let due: Vec<TrackedHost> = tracked.into_iter().filter(|t| {
             if first_run { return true; }
             let key = (t.panel.clone(), t.host.name.clone());
@@ -150,9 +158,7 @@ pub async fn start_uptime_monitoring(state: Arc<RwLock<AppState>>) {
                 Some(last) => now.duration_since(*last).as_secs() >= t.interval_secs,
             }
         }).collect();
-        first_run = false;
-
-        if !due.is_empty() {
+        first_run = false;        if !due.is_empty() {
             // ── 3. Scan all due hosts in parallel ─────────────────────────────
             let db_path_clone = db_path.clone();
 

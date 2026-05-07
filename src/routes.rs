@@ -510,6 +510,15 @@ pub async fn uptime_handler(
 }
 
 pub async fn scan_handler(State(state): State<SharedState>) -> Result<Json<Vec<ScanResult>>, (StatusCode, String)> {
+    // Prevent concurrent scans — return 429 if one is already running
+    let scan_running = {
+        let s = state.read().await;
+        s.scan_running.clone()
+    };
+    if scan_running.compare_exchange(false, true, std::sync::atomic::Ordering::SeqCst, std::sync::atomic::Ordering::SeqCst).is_err() {
+        return Err((StatusCode::TOO_MANY_REQUESTS, "scan already in progress".to_string()));
+    }
+
     // Snapshot panels without holding the lock during I/O
     let (panels_snapshot, db_path) = {
         let s = state.read().await;
@@ -543,6 +552,8 @@ pub async fn scan_handler(State(state): State<SharedState>) -> Result<Json<Vec<S
             results.push(r);
         }
     }
+
+    scan_running.store(false, std::sync::atomic::Ordering::SeqCst);
     Ok(Json(results))
 }
 
@@ -788,13 +799,13 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
                     html_escape(&panel.name),
                 ));
                 for (_host_id, host) in panel.hosts.iter().collect::<std::collections::BTreeMap<_,_>>() {
-                    let url = if host.url.is_empty() { "#".to_string() } else { html_escape(&host.url) };
+                    let url = if host.url.is_empty() { "#".to_string() } else { safe_url(&host.url) };
 
                     // Icon: hide entirely if empty, show image or emoji otherwise
                     let icon_html = if host.icon.is_empty() {
                         String::new()
-                    } else if host.icon.starts_with("http") {
-                        format!(r#"<span class="host-icon"><img src="{}" alt="" loading="lazy"></span>"#, html_escape(&host.icon))
+                    } else if let Some(src) = safe_img_src(&host.icon) {
+                        format!(r#"<span class="host-icon"><img src="{}" alt="" loading="lazy"></span>"#, src)
                     } else {
                         format!(r#"<span class="host-icon">{}</span>"#, html_escape(&host.icon))
                     };
@@ -1309,8 +1320,8 @@ function updateIconPreview(val) {{
         icon = html_escape(&host.icon),
         icon_preview = if host.icon.is_empty() {
             String::new()
-        } else if host.icon.starts_with("http") {
-            format!(r#"<img src="{}" style="width:100%;height:100%;object-fit:contain">"#, html_escape(&host.icon))
+        } else if let Some(src) = safe_img_src(&host.icon) {
+            format!(r#"<img src="{}" style="width:100%;height:100%;object-fit:contain">"#, src)
         } else {
             html_escape(&host.icon)
         },
@@ -1667,6 +1678,33 @@ fn html_escape(value: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&#x27;")
+}
+
+/// Sanitize a URL for use in href attributes.
+/// Only allows http://, https://, and # — everything else (javascript:, data:, etc.) is replaced with #.
+fn safe_url(url: &str) -> String {
+    let trimmed = url.trim();
+    if trimmed.is_empty() || trimmed == "#" {
+        return "#".to_string();
+    }
+    let lower = trimmed.to_ascii_lowercase();
+    if lower.starts_with("http://") || lower.starts_with("https://") {
+        html_escape(trimmed)
+    } else {
+        "#".to_string()
+    }
+}
+
+/// Sanitize a URL for use in img src attributes.
+/// Only allows http:// and https:// — blocks data:, javascript:, and anything else.
+fn safe_img_src(url: &str) -> Option<String> {
+    let trimmed = url.trim();
+    let lower = trimmed.to_ascii_lowercase();
+    if lower.starts_with("http://") || lower.starts_with("https://") {
+        Some(html_escape(trimmed))
+    } else {
+        None
+    }
 }
 
 /// Validate a CSS size value — only allow known-safe units.

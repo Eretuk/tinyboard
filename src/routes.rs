@@ -717,6 +717,8 @@ fn render_dashboard(config: &Config, links: &Links, selected_tab: Option<i32>, u
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>tinyboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap">
 <style>
 :root {{ --accent: {accent}; --accent-dark: {accent_dark}; --on: #4ade80; --off: #f87171; --btn-width: {btn_width}; --panel-gap: {panel_gap}; --btn-gap: {btn_gap}; --nav-font-size: {nav_font_size}; --btn-font-size: {btn_font_size}; }}
 [data-theme="dark"] {{ --bg: #1a1d23; --panel: #22262d; --panel-border: #2d333b; --text: #c9d1d9; --muted: #8b949e; --button-bg: #2d333b; --button-border: #444c56; --topbar-bg: var(--accent); --topbar-text: #ffffff; }}
@@ -754,11 +756,11 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
 .panel-card.no-border {{ border-color: transparent; background: transparent; box-shadow: none; }}
 .panel-card h3 {{ text-align: center; }}
 .host-grid {{ display: grid; gap: var(--btn-gap, 8px); grid-template-columns: minmax(var(--btn-width, 180px), var(--btn-width, 180px)); justify-content: center; }}
-.host-button {{ display: flex; gap: 0.45rem; align-items: center; justify-content: center; text-align: center; width: var(--btn-width, 180px); min-height: 30px; padding: 0.32rem 0.6rem; border-radius: 6px; background: var(--accent); border: none; color: var(--topbar-text); text-decoration: none; transition: transform 0.1s, filter 0.2s; }}
+.host-button {{ display: flex; gap: 0.45rem; align-items: center; justify-content: center; text-align: center; width: var(--btn-width, 180px); min-height: 30px; padding: 0.32rem 0.6rem; border-radius: 6px; background: var(--accent); border: none; color: var(--topbar-text); text-decoration: none; font-family: Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; transition: transform 0.1s, filter 0.2s; }}
 .host-button:hover {{ transform: translateY(-1px); filter: brightness(1.05); }}
 .host-icon {{ width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,0.25); display: inline-flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }}
 .host-icon img {{ width: 100%; height: 100%; object-fit: contain; display: block; }}
-.host-title {{ margin: 0; font-size: var(--btn-font-size); font-weight: 600; line-height: 1.1; color: var(--topbar-text); }}
+.host-title {{ margin: 0; font-size: var(--btn-font-size); font-weight: 500; line-height: 1.1; color: var(--topbar-text); }}
 .host-subtitle {{ margin: 0.1rem 0 0; color: var(--topbar-text); opacity: 0.72; font-size: calc(var(--btn-font-size) * 0.85); word-break: break-all; line-height: 1.05; }}
 .host-button > div {{ display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; }}
 .host-wrap {{ position: relative; display: inline-block; width: var(--btn-width, 180px); }}

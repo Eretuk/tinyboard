@@ -99,6 +99,9 @@ struct TrackedHost {
 pub async fn start_uptime_monitoring(state: Arc<RwLock<AppState>>) {
     info!("Uptime monitoring task started");
 
+    // Create the HTTP client once — reuse connection pool across all scan cycles
+    let monitor = Arc::new(UptimeMonitor::new());
+
     // last_scan: (panel, host_name) → Instant of last completed scan
     let mut last_scan: HashMap<(String, String), Instant> = HashMap::new();
     // Stagger first run so all hosts don't fire simultaneously on startup
@@ -151,7 +154,6 @@ pub async fn start_uptime_monitoring(state: Arc<RwLock<AppState>>) {
 
         if !due.is_empty() {
             // ── 3. Scan all due hosts in parallel ─────────────────────────────
-            let monitor = Arc::new(UptimeMonitor::new());
             let db_path_clone = db_path.clone();
 
             let tasks: Vec<_> = due.iter().map(|t| {
@@ -214,7 +216,7 @@ pub async fn start_uptime_monitoring(state: Arc<RwLock<AppState>>) {
 
 /// Write a single uptime record to the database.
 /// Opens a fresh connection per write so the DB handle is never shared across threads.
-pub fn save_record_pub(db_path: &Path, panel: &str, host_name: &str, status: bool, duration_ms: i64) {
+pub fn save_record(db_path: &Path, panel: &str, host_name: &str, status: bool, duration_ms: i64) {
     let record = crate::db::UptimeRecord {
         panel: panel.to_string(),
         host: host_name.to_string(),
@@ -230,9 +232,4 @@ pub fn save_record_pub(db_path: &Path, panel: &str, host_name: &str, status: boo
         }
         Err(e) => error!("Failed to open DB for '{}': {}", host_name, e),
     }
-}
-
-// Keep save_record as private alias used internally
-fn save_record(db_path: &Path, panel: &str, host_name: &str, status: bool, duration_ms: i64) {
-    save_record_pub(db_path, panel, host_name, status, duration_ms);
 }

@@ -15,6 +15,9 @@ FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates tzdata
 
+# Run as non-root user
+RUN addgroup -S tinyboard && adduser -S -G tinyboard tinyboard
+
 WORKDIR /app
 
 RUN mkdir -p /app/defaults /data/tinyboard
@@ -23,7 +26,10 @@ COPY board.yaml /app/defaults/board.yaml
 
 COPY --from=builder /app/target/release/tinyboard /usr/local/bin/tinyboard
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh \
+    && chown -R tinyboard:tinyboard /app /data
+
+USER tinyboard
 
 EXPOSE 8849
 ENTRYPOINT ["/app/entrypoint.sh"]

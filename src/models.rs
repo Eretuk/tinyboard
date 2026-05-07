@@ -102,8 +102,13 @@ impl Links {
     pub fn load(path: &Path) -> Result<Self> {
         let data = fs::read_to_string(path)
             .with_context(|| format!("failed to read board file {}", path.display()))?;
-        let links = serde_yaml::from_str(&data)
-            .with_context(|| format!("failed to parse board file {}", path.display()))?;
+        Self::load_from_str(&data)
+            .with_context(|| format!("failed to parse board file {}", path.display()))
+    }
+
+    pub fn load_from_str(data: &str) -> Result<Self> {
+        let links = serde_yaml::from_str(data)
+            .context("failed to parse board YAML")?;
         Ok(links)
     }
 

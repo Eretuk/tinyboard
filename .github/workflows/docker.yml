@@ -16,7 +16,9 @@ jobs:
       image: ${{ steps.name.outputs.image }}
     steps:
       - id: name
-        run: echo "image=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/tinyboard" >> $GITHUB_OUTPUT
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: echo "image=ghcr.io/$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')/tinyboard" >> $GITHUB_OUTPUT
 
   # ── Dev build (develop branch) ──────────────────────────────────────
   build-dev:

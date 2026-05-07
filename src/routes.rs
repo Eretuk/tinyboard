@@ -516,7 +516,7 @@ pub async fn scan_handler(State(state): State<SharedState>) -> Result<Json<Vec<S
             let db_path = db_path.clone();
             tasks.push(tokio::spawn(async move {
                 let (status, duration_ms) = monitor.scan_host(&host).await;
-                crate::uptime::save_record_pub(&db_path, &panel_name, &host.name, status, duration_ms);
+                crate::uptime::save_record(&db_path, &panel_name, &host.name, status, duration_ms);
                 ScanResult { panel: panel_name, host: host.name, status, duration: duration_ms as u64 }
             }));
         }
@@ -543,17 +543,27 @@ pub async fn config_save_handler(
     let mut state = state.write().await;
     state.config.host = form.host;
     state.config.port = form.port;
-    state.config.theme = form.theme;
-    state.config.color = form.color;
-    state.config.btn_width = form.btn_width;
+    state.config.theme = safe_theme(&form.theme).to_string();
+    state.config.color = safe_css_color(&form.color).to_string();
+    state.config.btn_width = normalize_css_size(&form.btn_width, "180px");
     state.config.web_refresh = form.web_refresh;
-    state.config.scan_interval = form.scan_interval;
-    state.config.db_trim_days = form.db_trim_days;
+    // Clamp scan_interval to [10, 86400] seconds
+    state.config.scan_interval = form.scan_interval
+        .parse::<u64>()
+        .unwrap_or(60)
+        .clamp(10, 86400)
+        .to_string();
+    // Clamp db_trim_days to [1, 365] days
+    state.config.db_trim_days = form.db_trim_days
+        .parse::<u64>()
+        .unwrap_or(30)
+        .clamp(1, 365)
+        .to_string();
     state.config.panel_gap = normalize_css_size(&form.panel_gap, "12px");
     state.config.center_columns = form.center_columns.is_some();
     state.config.panel_border = form.panel_border.is_some();
-    state.config.nav_font_size = form.nav_font_size;
-    state.config.btn_font_size = form.btn_font_size;
+    state.config.nav_font_size = normalize_css_size(&form.nav_font_size, "0.85rem");
+    state.config.btn_font_size = normalize_css_size(&form.btn_font_size, "0.8rem");
     state
         .config
         .save(&state.config_path)
@@ -572,11 +582,12 @@ pub async fn board_edit_save_handler(
     State(state): State<SharedState>,
     Form(form): Form<BoardEditForm>,
 ) -> Result<Redirect, (StatusCode, String)> {
+    // Validate YAML first — only write to disk if parsing succeeds
+    let links = Links::load_from_str(&form.content)
+        .map_err(|err| (StatusCode::BAD_REQUEST, format!("invalid YAML: {err}")))?;
     let mut state = state.write().await;
     fs::write(&state.board_path, &form.content)
         .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("failed to write board file: {err}")))?;
-    let links = Links::load(&state.board_path)
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, format!("failed to parse board file: {err}")))?;
     state.links = links;
     Ok(Redirect::to("/board_edit"))
 }
@@ -741,11 +752,11 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
 <div class=\"tab-card\">"#,
         render_management_menu(),
         tabs_html,
-        color = config.color,
-        btn_width = config.btn_width,
-        panel_gap = config.panel_gap,
-        nav_font_size = if config.nav_font_size.is_empty() { "0.85rem".to_string() } else { config.nav_font_size.clone() },
-        btn_font_size = if config.btn_font_size.is_empty() { "0.8rem".to_string() } else { config.btn_font_size.clone() },
+        color = safe_css_color(&config.color),
+        btn_width = safe_css_size(&config.btn_width, "180px"),
+        panel_gap = safe_css_size(&config.panel_gap, "12px"),
+        nav_font_size = safe_css_size(if config.nav_font_size.is_empty() { "0.85rem" } else { &config.nav_font_size }, "0.85rem"),
+        btn_font_size = safe_css_size(if config.btn_font_size.is_empty() { "0.8rem" } else { &config.btn_font_size }, "0.8rem"),
         accent = accent,
         accent_dark = accent_dark
     ));
@@ -1243,7 +1254,7 @@ function updateIconPreview(val) {{
     el.innerHTML = '<img src="' + val + '" style="width:100%;height:100%;object-fit:contain" onerror="this.parentNode.innerHTML=\'?\'">';
     el.style.background = 'transparent';
   }} else {{
-    el.innerHTML = val;
+    el.textContent = val;
     el.style.background = 'rgba(148,163,184,0.1)';
   }}
 }}
@@ -1605,9 +1616,37 @@ fn normalize_css_size(value: &str, fallback: &str) -> String {
     fallback.to_string()
 }
 
+/// Escape for HTML text content and attribute values.
 fn html_escape(value: &str) -> String {
     value
         .replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#x27;")
+}
+
+/// Validate a CSS size value — only allow known-safe units.
+/// Returns the value if valid, otherwise returns the fallback.
+fn safe_css_size(value: &str, fallback: &str) -> String {
+    normalize_css_size(value, fallback)
+}
+
+/// Validate a CSS color keyword — only allow "auto", "light", "dark".
+fn safe_css_color(value: &str) -> &str {
+    match value {
+        "auto" | "light" | "dark" => value,
+        _ => "auto",
+    }
+}
+
+/// Validate a theme name — only allow known Bootswatch themes.
+fn safe_theme(value: &str) -> &str {
+    match value.to_ascii_lowercase().as_str() {
+        "minty" | "cerulean" | "cosmo" | "cyborg" | "darkly" | "flatly" | "journal"
+        | "litera" | "lumen" | "lux" | "materia" | "morph" | "pulse" | "quartz"
+        | "sandstone" | "simplex" | "sketchy" | "slate" | "solar" | "spacelab"
+        | "superhero" | "united" | "vapor" => value,
+        _ => "minty",
+    }
 }

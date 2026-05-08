@@ -1,8 +1,540 @@
-tabs: {}
-panels: {}
+tabs:
+    0:
+        name: Infra
+        needs_auth: false
+        refresh: ""
+        horiz: false
+        panels:
+            0: Infrastructure
+            1: GitCI
+            2: Monitoring
+            3: Security
+            4: Synology
+            5: Automation
+            6: DHCP/DNS/VPN
+            7: Auth
+            8: Network
+            9: Tools
+    1:
+        name: Apps
+        needs_auth: false
+        refresh: ""
+        horiz: false
+        panels:
+            0: Docs
+            1: Storage
+            2: Mail
+            3: 3D
+    2:
+        name: IoT
+        needs_auth: false
+        refresh: ""
+        horiz: false
+        panels:
+            0: Zigbee
+            1: Smarthome
+    3:
+        name: Media
+        needs_auth: false
+        refresh: ""
+        horiz: false
+        panels:
+            0: Media seach
+            1: Media
+            2: WebFiles
+    4:
+        name: Nsk
+        needs_auth: false
+        refresh: ""
+        horiz: false
+        panels:
+            0: Nsk
+panels:
+    Auth:
+        name: Auth
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Authelia
+                addr: ""
+                port: ""
+                url: https://auth.kolspace.cc
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/authelia.svg
+                state: false
+            1:
+                name: ""
+                addr: ""
+                port: ""
+                url: https://ldap.lab.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lldap.svg
+                state: false
+    Automation:
+        name: Automation
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: n8n
+                addr: ""
+                port: ""
+                url: https://n8n.kolspace.cc
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/n8n.svg
+                state: false
+            1:
+                name: Semaphore
+                addr: ""
+                port: ""
+                url: http://192.168.110.120:3001/
+                icon: https://avatars.githubusercontent.com/u/98574287?v=4
+                state: false
+            2:
+                name: OpenAI
+                addr: ""
+                port: ""
+                url: https://platform.openai.com/settings
+                icon: https://www.svgrepo.com/show/306500/openai.svg
+                state: false
+            3:
+                name: OpenRouter
+                addr: ""
+                port: ""
+                url: https://openrouter.ai/activity
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/open-router.svg
+                state: false
+    DHCP/DNS/VPN:
+        name: DHCP/DNS/VPN
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: GW
+                addr: ""
+                port: ""
+                url: https://192.168.110.1
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/opnsense.svg
+                state: false
+            1:
+                name: AdGuard
+                addr: ""
+                port: ""
+                url: http://192.168.110.1:8080/#
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/adguardhome.svg
+                state: false
+            2:
+                name: Headscale
+                addr: ""
+                port: ""
+                url: https://headscale.kolspace.cc/admin/
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/headscale.svg
+                state: false
+            3:
+                name: Traefik
+                addr: ""
+                port: ""
+                url: https://traefik.lab.kolspace.cc/dashboard/
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/traefik-gopher.svg
+                state: false
+    Docs:
+        name: Docs
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Wiki
+                addr: ""
+                port: ""
+                url: https://wiki.kolspace.cc
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/bookstack.svg
+                state: false
+            1:
+                name: MediKeep
+                addr: ""
+                port: ""
+                url: https://medical.kolspace.cc
+                icon: https://static.vecteezy.com/system/resources/previews/007/429/591/non_2x/medical-records-icon-style-vector.jpg
+                state: false
+            2:
+                name: Paperless
+                addr: ""
+                port: ""
+                url: https://paperless.kolspace.cc
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/paperlessng.svg
+                state: false
+            3:
+                name: ezbookkeeping
+                addr: ""
+                port: ""
+                url: https://ezbookkeeping.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/ezbookkeeping.png
+                state: false
+            4:
+                name: Papra
+                addr: ""
+                port: ""
+                url: https://papra.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/papra.svg
+                state: false
+    GitCI:
+        name: GitCI
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Git
+                addr: ""
+                port: ""
+                url: https://git.kolspace.cc
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg
+                state: false
+            1:
+                name: Woodpecker
+                addr: ""
+                port: ""
+                url: https://woodpecker.kolspace.cc
+                icon: https://woodpecker-ci.org/img/logo.svg
+                state: false
+            2:
+                name: Github(tinyboard)
+                addr: ""
+                port: ""
+                url: https://github.com/Eretuk/tinyboard
+                icon: https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/github-dark.svg
+                state: false
+    Infrastructure:
+        name: Infrastructure
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Proxmox
+                addr: ""
+                port: ""
+                url: https://proxmox.kolspace.cc
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/proxmox.svg
+                state: false
+            1:
+                name: Portainer
+                addr: ""
+                port: ""
+                url: https://portainer.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/portainer.svg
+                state: false
+    Mail:
+        name: Mail
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Anchor
+                addr: ""
+                port: ""
+                url: https://anchor.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anchor.svg
+                state: false
+            1:
+                name: Stalwart
+                addr: ""
+                port: ""
+                url: https://mail.kolspace.cc/account
+                icon: https://avatars.githubusercontent.com/u/76623657?s=48&v=4
+                state: false
+            2:
+                name: Mail
+                addr: ""
+                port: ""
+                url: https://webmail.kolspace.cc
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/roundcube.svg
+                state: false
+    Media:
+        name: Media
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Tdarr
+                addr: ""
+                port: ""
+                url: http://192.168.140.99:8265
+                icon: https://home.tdarr.io/static/media/logo3-min.246d6df44c7f16ddebaf.png
+                state: false
+            1:
+                name: Jellyfin
+                addr: ""
+                port: ""
+                url: https://jellyfin.kolspace.cc
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/jellyfin.svg
+                state: false
+            2:
+                name: Seerr
+                addr: ""
+                port: ""
+                url: https://seerr.kolspace.cc/
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/jellyseerr.svg
+                state: false
+    Media seach:
+        name: Media seach
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Radarr
+                addr: ""
+                port: ""
+                url: http://192.168.140.99:7878
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/radarr-dark.svg
+                state: false
+            1:
+                name: Sonarr
+                addr: ""
+                port: ""
+                url: http://192.168.140.99:8989
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/sonarr.svg
+                state: false
+            2:
+                name: Jackett
+                addr: ""
+                port: ""
+                url: http://192.168.140.99:9117
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/jackett.svg
+                state: false
+            3:
+                name: Yamtrack
+                addr: ""
+                port: ""
+                url: https://yamtrack.kolspace.cc/
+                icon: https://getumbrel.github.io/umbrel-apps-gallery/yamtrack/icon.svg
+                state: false
+    Monitoring:
+        name: Monitoring
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Beszel
+                addr: ""
+                port: ""
+                url: https://beszel.kolspace.cc
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/beszel.webp
+                state: false
+    Network:
+        name: Network
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Mikrotik switch
+                addr: ""
+                port: ""
+                url: http://192.168.110.2
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/mikrotik.svg
+                state: false
+            1:
+                name: HP Switch
+                addr: ""
+                port: ""
+                url: http://192.168.110.4/index.html
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/hp.svg
+                state: false
+            2:
+                name: KL Switch
+                addr: ""
+                port: ""
+                url: http://192.168.110.5
+                icon: https://ae01.alicdn.com/kf/H4a08a105e56146a49c2d48f1b63c3d308.jpg_640x640q90.jpg
+                state: false
+    Nsk:
+        name: Nsk
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: DSM
+                addr: ""
+                port: ""
+                url: http://quickconnect.to/kown-nas-nsk
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/synology-diskstationmanager.svg
+                state: false
+            1:
+                name: Uptime-kuma
+                addr: ""
+                port: ""
+                url: http://kown.duckdns.org:3001/
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/uptimekuma.svg
+                state: false
+    Security:
+        name: Security
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Cloudflare
+                addr: ""
+                port: ""
+                url: https://dash.cloudflare.com/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cloudflare.svg
+                state: false
+            1:
+                name: Crowdsec
+                addr: ""
+                port: ""
+                url: https://app.crowdsec.net/security-engines
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/crowdsec.svg
+                state: false
+    Smarthome:
+        name: Smarthome
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Homeassistant(LB)
+                addr: ""
+                port: ""
+                url: https://hsio.kolspace.cc
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/homeassistant.svg
+                state: false
+            1:
+                name: Homeassistant(local)
+                addr: ""
+                port: ""
+                url: http://192.168.130.200:8123
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/homeassistant.svg
+                state: false
+    Storage:
+        name: Storage
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: Drive
+                addr: ""
+                port: ""
+                url: https://drive.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/seafile.svg
+                state: false
+            1:
+                name: Photos
+                addr: ""
+                port: ""
+                url: https://photos.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/immich.svg
+                state: false
+            2:
+                name: Vaultwarden
+                addr: ""
+                port: ""
+                url: https://vault.kolspace.cc
+                icon: https://raw.githubusercontent.com/loganmarchione/homelab-svg-assets/refs/heads/main/assets/vaultwarden.svg
+                state: false
+            3:
+                name: Attic
+                addr: ""
+                port: ""
+                url: https://attic.kolspace.cc/
+                icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeOVJL8mz6tYCXFsqAHn6b0wWNix2_tF8Vxg&s
+                state: false
+            4:
+                name: kitchenowl
+                addr: ""
+                port: ""
+                url: https://kitchenowl.kolspace.cc/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kitchenowl.svg
+                state: false
+    Synology:
+        name: Synology
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: DSM
+                addr: ""
+                port: ""
+                url: https://diskstation.kol.myds.me:5001
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/synology-dsm.svg
+                state: false
+            1:
+                name: UnifiOS
+                addr: ""
+                port: ""
+                url: https://192.168.110.135:11443/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/unifi.svg
+                state: false
+            2:
+                name: Rustfs
+                addr: ""
+                port: ""
+                url: http://192.168.110.120:9001
+                icon: https://rustfs.com/apple-touch-icon.png
+                state: false
+            3:
+                name: Dbackup
+                addr: ""
+                port: ""
+                url: http://192.168.110.40:3000/
+                icon: http://192.168.110.40:3000/logo.svg
+                state: false
+            4:
+                name: PBS
+                addr: ""
+                port: ""
+                url: https://192.168.110.200:8007/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/proxmox.svg
+                state: false
+    Tools:
+        name: Tools
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: DockerHub
+                addr: ""
+                port: ""
+                url: https://hub.docker.com/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/docker.svg
+                state: false
+            1:
+                name: selfh Icons
+                addr: ""
+                port: ""
+                url: https://selfh.st/icons/
+                icon: ""
+                state: false
+            2:
+                name: Icons
+                addr: ""
+                port: ""
+                url: https://dashboardicons.com/
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/hd-icons.svg
+                state: false
+            3:
+                name: OmniRoute
+                addr: ""
+                port: ""
+                url: http://192.168.150.111:20128/
+                icon: ""
+                state: false
+    Zigbee:
+        name: Zigbee
+        scan: false
+        timeout: ""
+        hosts:
+            0:
+                name: XZG(Wi-Fi)
+                addr: ""
+                port: ""
+                url: http://192.168.130.80/
+                icon: ""
+                state: false
+            1:
+                name: XZG(Ethernet)
+                addr: ""
+                port: ""
+                url: http://192.168.110.80/
+                icon: ""
+                state: false
 uptime:
-  enabled: false
-  needs_auth: false
-  show: 20
-  notify: {}
-  panels: {}
+    enabled: false
+    needs_auth: false
+    show: 30
+    notify: {}
+    panels: {}

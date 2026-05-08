@@ -18,6 +18,6 @@ target
 
 # Local config overrides (use config.yaml.example and board.yaml.example instead)
 # Uncomment if you don't want to track your local configs:
-# config.yaml
-# board.yaml
+config.yaml
+board.yaml
 

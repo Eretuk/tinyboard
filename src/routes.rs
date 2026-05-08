@@ -717,6 +717,7 @@ fn render_dashboard(config: &Config, links: &Links, selected_tab: Option<i32>, u
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>tinyboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2378c2ad'/><rect x='6' y='8' width='20' height='3' rx='1.5' fill='white'/><rect x='6' y='14' width='15' height='3' rx='1.5' fill='white'/><rect x='6' y='20' width='10' height='3' rx='1.5' fill='white'/></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/{theme}/bootstrap.min.css">
 <style>
 :root {{ --accent: {accent}; --accent-dark: {accent_dark}; --on: #4ade80; --off: #f87171; --btn-width: {btn_width}; --panel-gap: {panel_gap}; --btn-gap: {btn_gap}; --nav-font-size: {nav_font_size}; --btn-font-size: {btn_font_size}; }}
@@ -750,8 +751,8 @@ body {{ background: var(--bg); color: var(--text); font-family: -apple-system, B
 .panel-columns.flow {{ grid-template-columns: repeat(auto-fill, minmax(var(--panel-col-width), var(--panel-col-width))); justify-content: center; }}
 .panel-card {{ width: var(--panel-col-width); background: rgba(255,255,255,0.03); border: 1px solid rgba(148,163,184,0.12); border-radius: 20px; padding: 0.75rem 0.6rem; margin: 0; }}
 .panel-columns.tight .panel-card {{ padding: 0.35rem 0.2rem; border-radius: 12px; }}
-.panel-card h3 {{ margin: 0 0 0.85rem 0; font-size: 1rem; }}
-.panel-card h3 a {{ color: inherit; text-decoration: underline; text-underline-offset: 2px; }}
+.panel-card h3 {{ margin: 0 0 0.85rem 0; font-size: 1rem; color: var(--text); }}
+.panel-card h3 a {{ color: var(--text); text-decoration: underline; text-underline-offset: 2px; }}
 .panel-card.no-border {{ border-color: transparent; background: transparent; box-shadow: none; }}
 .panel-card h3 {{ text-align: center; }}
 .host-grid {{ display: grid; gap: var(--btn-gap, 8px); grid-template-columns: minmax(var(--btn-width, 180px), var(--btn-width, 180px)); justify-content: center; }}

@@ -15,8 +15,10 @@ FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates tzdata
 
-# Run as non-root user
-RUN addgroup -S tinyboard && adduser -S -G tinyboard tinyboard
+# Run as non-root user with fixed UID/GID to avoid conflicts with host system users.
+# UID 10001 is in the safe range (above system users <1000, avoids host conflicts).
+# On the host, run: sudo chown -R 10001:10001 ./data
+RUN addgroup -g 10001 -S tinyboard && adduser -u 10001 -S -G tinyboard tinyboard
 
 WORKDIR /app
 

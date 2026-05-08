@@ -33,6 +33,8 @@ Inspired by [miniboard](https://github.com/aceberg/miniboard) by aceberg, but bu
 ```sh
 mkdir -p data
 cp config.yaml board.yaml data/
+# Fix ownership so the container user (UID 10001) can write to the data directory
+sudo chown -R 10001:10001 data/
 docker compose up -d
 ```
 

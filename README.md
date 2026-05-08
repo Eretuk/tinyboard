@@ -4,6 +4,16 @@ A lightweight self-hosted homelab dashboard with uptime monitoring. Pure Rust â€
 
 Inspired by [miniboard](https://github.com/aceberg/miniboard) by aceberg, but built differently: redb storage, parallel uptime scanning, per-host scan intervals, and a fraction of the memory footprint.
 
+## Screenshots
+
+![Dashboard](screenshots/dashboard.png)
+![Dashboard with panels](screenshots/dashboard2.png)
+![Uptime monitoring](screenshots/uptime.png)
+![Config](screenshots/config.png)
+![Edit panel](screenshots/edit_panel.png)
+![Edit tabs](screenshots/edit_tabs.png)
+![About](screenshots/about.png)
+
 ## Why tinyboard?
 
 | | tinyboard | miniboard (Go) | Homarr / Dashy |

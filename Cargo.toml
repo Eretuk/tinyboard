@@ -1,6 +1,6 @@
 [package]
 name = "tinyboard"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 authors = ["Victor Kolomin"]
 description = "Lightweight self-hosted homelab dashboard with uptime monitoring"

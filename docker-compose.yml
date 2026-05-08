@@ -1,18 +1,19 @@
 services:
   tinyboard:
-    image: git.kolspace.cc/victor.kolomin/tinyboard:latest
+    image: ghcr.io/eretuk/tinyboard:latest
     # To build locally instead:
     # build: .
     container_name: tinyboard
     restart: unless-stopped
-    # Run as the same UID/GID defined in the Dockerfile (10001:10001).
-    # On first run, fix ownership of the data directory:
-    #   sudo chown -R 10001:10001 ./data
+    # Container runs as UID/GID 10001 (non-root, matches Dockerfile).
+    # Before first start, create the data directory with correct ownership:
+    #   mkdir -p data && sudo chown -R 10001:10001 data/
     user: "10001:10001"
     ports:
       - "8849:8849"
     volumes:
-      # Persistent storage for config.yaml, board.yaml and the redb uptime database
+      # Persistent storage for config.yaml, board.yaml and the redb uptime database.
+      # The directory must be owned by UID 10001 (see above).
       - ./data:/data/tinyboard
     environment:
       - TZ=Europe/Warsaw

@@ -31,18 +31,21 @@ Inspired by [miniboard](https://github.com/aceberg/miniboard) by aceberg, but bu
 ### Docker Compose (recommended)
 
 ```sh
+# 1. Create data directory and set ownership for container user (UID 10001)
 mkdir -p data
-cp config.yaml board.yaml data/
-# Fix ownership so the container user (UID 10001) can write to the data directory
 sudo chown -R 10001:10001 data/
+
+# 2. Start
 docker compose up -d
 ```
+
+On first start, default `config.yaml` and `board.yaml` are copied into `./data/` automatically.
 
 Dashboard: **http://localhost:8849**
 
 ### Build from source
 
-Requires Rust 1.75+. No C toolchain, no perl, no system libraries needed.
+Requires Rust 1.85+. No C toolchain, no perl, no system libraries needed.
 
 ```sh
 cargo build --release
@@ -52,12 +55,17 @@ cargo build --release
 ### Docker (manual)
 
 ```sh
+# Create data directory with correct ownership first
+mkdir -p data
+sudo chown -R 10001:10001 data/
+
 docker run -d \
   --name tinyboard \
+  --user 10001:10001 \
   -p 8849:8849 \
   -v $(pwd)/data:/data/tinyboard \
   -e TZ=Europe/Warsaw \
-  git.kolspace.cc/victor.kolomin/tinyboard:latest
+  ghcr.io/eretuk/tinyboard:latest
 ```
 
 ## Configuration
@@ -223,55 +231,9 @@ docker buildx build --platform linux/amd64,linux/arm64 -t tinyboard .
 
 ## CI/CD Pipeline
 
-### Overview
-
-- **Gitea (Woodpecker CI)**: Builds dev images on every `develop` branch push
-- **GitHub (Actions)**: Builds and publishes release images on version tags
-
-### Workflow
-
-#### Development builds (Gitea → internal registry)
-
-1. Push to `develop` branch
-2. Woodpecker automatically builds and pushes to `git.kolspace.cc/victor.kolomin/tinyboard:dev`
-3. Tags: `dev`, `dev-{commit-sha:8}`
-
-```bash
-git push origin develop
-# → Woodpecker builds and pushes to internal registry
-```
-
-#### Release builds (Gitea → GitHub → ghcr.io)
-
-1. Create a version tag on `main` branch
-2. Gitea Woodpecker detects the tag and triggers GitHub Actions via API
-3. GitHub Actions builds multi-platform image and pushes to `ghcr.io`
-4. Tags: `latest`, `{version}`
-
-```bash
-git tag v1.0.0
-git push origin main --tags
-# → Woodpecker triggers GitHub Actions
-# → GitHub Actions builds and pushes to ghcr.io/victorkolomin/tinyboard:v1.0.0
-```
-
-### Configuration
-
-**Gitea secrets** (`.woodpecker/build.yaml`):
-- `gitea_registry_user` — Gitea registry username
-- `gitea_registry_pass` — Gitea registry password
-- `github_pat` — GitHub Personal Access Token (for triggering Actions)
-- `github_repo` — GitHub repository (e.g., `victorkolomin/tinyboard`)
-
-**GitHub secrets** (`.github/workflows/docker.yml`):
-- `GITHUB_TOKEN` — automatically provided by GitHub Actions
-
-### Image locations
-
-| Registry | Image | Tags |
-|----------|-------|------|
-| Gitea (internal) | `git.kolspace.cc/victor.kolomin/tinyboard` | `dev`, `dev-{sha8}` |
-| GitHub (public) | `ghcr.io/victorkolomin/tinyboard` | `latest`, `v*` |
+- **GitHub Actions**: builds and publishes Docker images automatically
+- `develop` branch push → `ghcr.io/eretuk/tinyboard:dev` (amd64)
+- GitHub Release publish → `ghcr.io/eretuk/tinyboard:latest` + `ghcr.io/eretuk/tinyboard:vX.Y.Z` (amd64 + arm64)
 
 ## License
 

@@ -112,7 +112,7 @@ pub async fn tabs_handler(
 
             let mut tab = Tab {
                 name: name.trim().to_string(),
-                refresh: params.get("refresh").and_then(|v| v.first()).cloned().unwrap_or_default(),
+                refresh: normalize_refresh(params.get("refresh").and_then(|v| v.first()).map(|s| s.as_str()).unwrap_or("")),
                 horiz: params.contains_key("horiz"),
                 panels: HashMap::new(),
                 needs_auth: false,
@@ -186,7 +186,7 @@ pub async fn tab_edit_handler(
 
     let mut tab = Tab {
         name: name.trim().to_string(),
-        refresh: refresh.trim().to_string(),
+        refresh: normalize_refresh(refresh.trim()),
         horiz,
         panels: HashMap::new(),
         needs_auth: false,
@@ -567,12 +567,26 @@ pub async fn config_save_handler(
     Form(form): Form<ConfigForm>,
 ) -> Result<Redirect, (StatusCode, String)> {
     let mut state = state.write().await;
-    state.config.host = form.host;
-    state.config.port = form.port;
+    // Validate host — only allow valid IP addresses or hostnames (no spaces, no special chars)
+    let host = form.host.trim().to_string();
+    let host = if host.is_empty() || host.contains(|c: char| c == '"' || c == '\'' || c == '<' || c == '>' || c == ' ') {
+        "0.0.0.0".to_string()
+    } else {
+        host
+    };
+    state.config.host = host;
+    // Validate port — must be a valid u16 (1-65535)
+    let port = form.port.parse::<u16>().unwrap_or(8849);
+    state.config.port = port.max(1).to_string();
     state.config.theme = safe_theme(&form.theme).to_string();
     state.config.color = safe_css_color(&form.color).to_string();
     state.config.btn_width = normalize_css_size(&form.btn_width, "180px");
-    state.config.web_refresh = form.web_refresh;
+    // Clamp web_refresh to [5, 3600] seconds
+    state.config.web_refresh = form.web_refresh
+        .parse::<u64>()
+        .unwrap_or(60)
+        .clamp(5, 3600)
+        .to_string();
     // Clamp scan_interval to [10, 86400] seconds
     state.config.scan_interval = form.scan_interval
         .parse::<u64>()
@@ -1310,9 +1324,14 @@ fn render_host_edit_page(config: &Config, panel_key: &str, host_id: i32, host: &
 <script>
 function updateIconPreview(val) {{
   var el = document.getElementById('icon_preview');
-  if (!val) {{ el.innerHTML = ''; el.style.background = 'rgba(148,163,184,0.1)'; return; }}
-  if (val.startsWith('http')) {{
-    el.innerHTML = '<img src="' + val + '" style="width:100%;height:100%;object-fit:contain" onerror="this.parentNode.innerHTML=\'?\'">';
+  el.innerHTML = '';
+  if (!val) {{ el.style.background = 'rgba(148,163,184,0.1)'; return; }}
+  if (val.startsWith('http://') || val.startsWith('https://')) {{
+    var img = document.createElement('img');
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain';
+    img.onerror = function() {{ el.textContent = '?'; }};
+    img.src = val;
+    el.appendChild(img);
     el.style.background = 'transparent';
   }} else {{
     el.textContent = val;
@@ -1714,13 +1733,21 @@ fn safe_img_src(url: &str) -> Option<String> {
     }
 }
 
+/// Normalize a refresh interval — only allow positive integers, empty string means off.
+fn normalize_refresh(value: &str) -> String {
+    let trimmed = value.trim();
+    if trimmed.is_empty() { return String::new(); }
+    match trimmed.parse::<u64>() {
+        Ok(n) if n > 0 => n.to_string(),
+        _ => String::new(),
+    }
+}
+
 /// Validate a CSS size value — only allow known-safe units.
 /// Returns the value if valid, otherwise returns the fallback.
 fn safe_css_size(value: &str, fallback: &str) -> String {
     normalize_css_size(value, fallback)
 }
-
-/// Validate a CSS color keyword — only allow "auto", "light", "dark".
 fn safe_css_color(value: &str) -> &str {
     match value {
         "auto" | "light" | "dark" => value,

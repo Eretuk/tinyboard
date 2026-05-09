@@ -158,7 +158,9 @@ pub async fn start_uptime_monitoring(state: Arc<RwLock<AppState>>) {
                 Some(last) => now.duration_since(*last).as_secs() >= t.interval_secs,
             }
         }).collect();
-        first_run = false;        if !due.is_empty() {
+        first_run = false;
+
+        if !due.is_empty() {
             // ── 3. Scan all due hosts in parallel ─────────────────────────────
             let db_path_clone = db_path.clone();
 
